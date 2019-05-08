@@ -8,7 +8,7 @@ The job archive uses POSIX inotify api, which is camped on this directory waitin
  - /var/spool/slurm/hash.*
 
 Once the jobs show up, then the user's jobs are ultimately copied to:
- - /your-dir/jobscript_archive/<userid>/<year>/<month>/
+ - /your-dir/jobscript_archive/userid/year/month/
 
 For example:
  - /your-dir/jobscript_archive/joe/2019/05/
