@@ -375,7 +375,7 @@ void do_processFiles( const int& id, const string& targDestPath1, Queue<SlurmJob
         }
 
         // base filename
-        string targFileBase = to_string(static_cast<long long>(jobdir->jobId)) + (parse.slurm_job_name.size() == 0 ? "" : parse.slurm_job_name);
+        string targFileBase = to_string(static_cast<long long>(jobdir->jobId)) + (parse.slurm_job_name.size() == 0 ? "" : string("-") + parse.slurm_job_name);
         string destScriptFile = targDestPathFull + "/" + targFileBase + ".sh";
         string destEnvFile = targDestPathFull + "/" + targFileBase + ".env";
 
