@@ -22,11 +22,15 @@ myjob is from #SBATCH --job-name=myjob
 
 ## Build Instructions
 
-In our environment we are using a default gcc 4.4.7 from Cent OS 6.
+In our environment we are using a default gcc 4.4.7 from Cent OS 6. Because of this older gcc version, which we chose not to upgrade to a newer version, then this does impact a few of the design strategies.
 
 To build, use this simple one liner:
 
  - g++ job_archive.cpp -o job_archive -std=c++0x -lpthread
+
+If you are running a newer version of gcc, then use an appropriate alternate, such as:
+
+ - g++ job_archive.cpp -o job_archive -std=c++11 -lpthread
 
 ## Deployment Environment
 
