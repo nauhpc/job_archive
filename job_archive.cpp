@@ -302,15 +302,6 @@ void do_processFiles( const int& id, const string& targDestPath1, Queue<SlurmJob
             delete jobdir;
             continue;
         }
-        if (parse.slurm_job_name.size() == 0) {
-            // slurm_job_name is normally populated with 1.script --job-name= setting, or the 2.act script name, or 3.not at all???
-            // todo - actually this is optional if not found
-            sprintf( prtBuf, "ERROR:%d SLURM_JOB_NAME env not found -%s", id, jobdir->getString().c_str());
-            logger->LOG(prtBuf);
-            saveJobFiles( prtBuf, jobdir, logger );
-            delete jobdir;
-            continue;
-        }
         if (debug > 2) cout << "Found: USER=" << parse.user
                         << " SLURM_JOB_NAME=" << parse.slurm_job_name
                         << " in: " << srcEnvFile << endl;
