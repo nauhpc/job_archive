@@ -430,6 +430,8 @@ void do_inotify(const int& id, const string& watchDir, Queue<SlurmJobDirectory>*
  
         while ( i < length ) {
           struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
+          i += EVENT_SIZE + event->len;
+
           if ( event->len ) {
             if ( event->mask & IN_CREATE && event->mask & IN_ISDIR) {
                 if (debug > 2) {
@@ -456,8 +458,6 @@ void do_inotify(const int& id, const string& watchDir, Queue<SlurmJobDirectory>*
                 if (debug > 2) cout << "do_inotify:" << id << " enqueue q-size: " << pqueue->getQueueSize() << endl;
 
             } // if ( event->mask & IN_CREATE && event->mask & IN_ISDIR)
-
-            i += EVENT_SIZE + event->len;
           } // if ( event->len )
         } // while
     } // while(1)
