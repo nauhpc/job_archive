@@ -17,6 +17,7 @@ g++ job_archive.cpp -o job_archive -std=c++0x -lpthread
 #include <iterator>
 #include <iomanip>
 #include <vector>
+#include <algorithm>
 #include <signal.h>
 #include <cctype>
 using namespace std;
@@ -105,6 +106,15 @@ struct SlurmJobDirectory {
     }
 };
 
+bool invalidChar (char c)
+{
+    return !(c>=0 && c <128);
+}
+void stripUnicode(string & str)
+{
+    str.erase(remove_if(str.begin(),str.end(), invalidChar), str.end());
+}
+
 struct ParseBuffer {
     string user;
     string slurm_job_name;
@@ -119,7 +129,10 @@ struct ParseBuffer {
           if (found!=std::string::npos) {
               string key = line.substr(0,found);
               if (key == "USER") user = line.substr(found+1);
-              if (key == "SLURM_JOB_NAME") slurm_job_name = line.substr(found+1);
+              if (key == "SLURM_JOB_NAME") {
+                  slurm_job_name = line.substr(found+1);
+                  stripUnicode(slurm_job_name);
+              }
               if (key == "SLURM_SUBMIT_DIR") slurm_submit_dir = line.substr(found+1);
           }
           //cout << line << endl;
