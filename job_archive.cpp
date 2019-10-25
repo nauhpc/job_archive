@@ -106,9 +106,12 @@ struct SlurmJobDirectory {
     }
 };
 
-bool invalidChar (char c)
+bool invalidChar (unsigned char c)
 {
-    return !(c>=0 && c <128);
+    // GOAL: return true when char is *not* valid.
+    // *valid* char set: (c>=0 && c<128) && c!=1
+    // ACTION: return false when char *does* match this set 
+    return !(c>=0 && c<128 && c!=1);
 }
 void stripUnicode(string & str)
 {
