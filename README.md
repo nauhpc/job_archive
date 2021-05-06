@@ -22,30 +22,25 @@ myjob is from #SBATCH --job-name=myjob
 
 ## Build Instructions
 
-In our environment we are using a default gcc 4.4.7 from Cent OS 6. Because of this older gcc version, which we chose not to upgrade to a newer version, then this does impact a few of the design strategies.
+In our environment we are using a default gcc 8.3.1 from Cent OS 8.
 
-To build, use this simple one liner:
-
- - g++ job_archive.cpp -o job_archive -std=c++0x -lpthread
-
-If you are running a newer version of gcc, then use an appropriate alternate, such as:
+To build, we used this simple one liner:
 
  - g++ job_archive.cpp -o job_archive -std=c++11 -lpthread
 
 ## Deployment Environment
 
-In our environment we use an init.d service configured with the following paths:
+In our environment we use a systemd service configured with the following paths:
 
  - run from: /etc/init.d/jobarchive-service-example
 
  - program binary run from: /usr/local/jobarchive/job_archive
-
- - internal logging at: /var/log/jobarchive/jobarchive.log
+ 
+The program writes logging information to STDOUT and so is accessible via
+/var/log/messages.
 
 The program writes to the local job archival directory is on the slurm controller host:
  - /var/slurm/jobscript_archive/
 
 Then a cron runs every 5 minutes to move all jobs to a common user accessable path:
  - /your-dir/jobscript_archive
-
-
