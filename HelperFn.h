@@ -165,6 +165,35 @@ bool setfacl(string userid, string directory, bool debug) {
         cout << "setfacl ERROR: " << &output[0] << endl;
         return false;
     }
+
+    // now run same setfacl command but this time to give access to ITS-HPC-staff group
+    output.clear(); 
+    // example expected output: /usr/bin/setfacl -d -m u:cbc:rx,o::- /common/jobscript_archive/cbc
+    // also manually posix permission before user mkdir: chmod 766 /common/jobscript_archive
+    sprintf(cmd, "/usr/bin/setfacl -d -m g:%s:rx,o::- %s", "ITS-HPC-staff", directory.c_str());
+    if (debug) 
+        cout << "setfacl cmd: " << cmd << endl;
+
+    pipe = popen(cmd, "r");
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    try {
+        // todo review/test error recover strategy
+        size_t status = fread(output.data(), 1, output.size(), pipe);
+        if (debug) 
+            cout << "setfacl status: " << status << endl;
+        if(status < output.size()) {
+            throw;
+        }
+    } catch (...) {
+        pclose(pipe);
+        throw;
+    }
+    pclose(pipe);
+
+    if (output.size() > 0) {
+        cout << "setfacl ERROR: " << &output[0] << endl;
+        return false;
+    }
+
     return true;
 }
-
