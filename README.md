@@ -1,11 +1,12 @@
 # job_archive
 
-Archive Slurm job scripts as they are submitted as a permanent archive on what was run
+Archive Slurm batch scripts as they are submitted as a permanent archive on what was submitted.
 
 ## Overview
 
-The job archive uses POSIX inotify api, which is camped on this directory waiting for jobs to be submitted:
+The job archive process uses POSIX inotify api, monitoring for new files appearing in:
  - /var/spool/slurm/hash.*
+ - 1 separate thread per hash directory
 
 Once the jobs show up, then the user's jobs are ultimately copied to:
  - /your-dir/jobscript_archive/userid/year/month/
