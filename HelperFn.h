@@ -135,12 +135,10 @@ void writeString2File( const string& line, const string& dest_file ) {
     out.close();
 }
 
-bool setfacl(string userid, string directory, bool debug) {
+bool setfacl(string userid, string directory, vector<string> groups, bool debug) {
     vector<char> output;
     // this is normally from userid: slurm
     char cmd[100];
-    // example expected output: /usr/bin/setfacl -d -m u:cbc:rx,o::- /common/jobscript_archive/cbc
-    // also manually posix permission before user mkdir: chmod 766 /common/jobscript_archive
     sprintf(cmd, "/usr/bin/setfacl -d -m u:%s:rx,o::- %s", userid.c_str(), directory.c_str());
     if (debug) 
         cout << "setfacl cmd: " << cmd << endl;
@@ -166,33 +164,39 @@ bool setfacl(string userid, string directory, bool debug) {
         return false;
     }
 
-    // now run same setfacl command but this time to give access to ITS-HPC-staff group
-    output.clear(); 
-    // example expected output: /usr/bin/setfacl -d -m u:cbc:rx,o::- /common/jobscript_archive/cbc
-    // also manually posix permission before user mkdir: chmod 766 /common/jobscript_archive
-    sprintf(cmd, "/usr/bin/setfacl -d -m g:%s:rx,o::- %s", "ITS-HPC-staff", directory.c_str());
-    if (debug) 
+    // now run the same setfacl command for each group in groups
+
+    for(string group : groups) {
+
+      output.clear();
+
+      // example expected output: /usr/bin/setfacl -d -m u:cbc:rx,o::- /common/jobscript_archive/cbc
+      // also manually posix permission before user mkdir: chmod 766 /common/jobscript_archive
+      sprintf(cmd, "/usr/bin/setfacl -d -m g:%s:rx,o::- %s", group.c_str(), directory.c_str());
+      if (debug) 
         cout << "setfacl cmd: " << cmd << endl;
 
-    pipe = popen(cmd, "r");
-    if (!pipe) throw std::runtime_error("popen() failed!");
-    try {
+      pipe = popen(cmd, "r");
+      if (!pipe) throw std::runtime_error("popen() failed!");
+      try {
         // todo review/test error recover strategy
         size_t status = fread(output.data(), 1, output.size(), pipe);
         if (debug) 
-            cout << "setfacl status: " << status << endl;
+          cout << "setfacl status: " << status << endl;
         if(status < output.size()) {
-            throw;
+          throw;
         }
-    } catch (...) {
+      } catch (...) {
         pclose(pipe);
         throw;
-    }
-    pclose(pipe);
+      }
+      pclose(pipe);
 
-    if (output.size() > 0) {
+      if (output.size() > 0) {
         cout << "setfacl ERROR: " << &output[0] << endl;
         return false;
+      }
+
     }
 
     return true;

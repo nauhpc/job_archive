@@ -44,3 +44,23 @@ The program writes to the local job archival directory is on the slurm controlle
 
 Then a cron runs every 5 minutes to move all jobs to a common user accessable path:
  - /your-dir/jobscript_archive
+
+## Execution
+
+The binary currently accepts two optional arguments.
+
+    ./jobarchive [-d<X>] [-c <file>]
+
+    Example: ./jobarchive -d1 -c groups.txt
+    
+The debug levels are:
+
+ * 0 (default) - silent, except for errors
+ * 1 - final do_processFiles status
+ * 2 - final do_processFiles status plus re-try warnings
+ * 3 - verbose
+
+The -c indicates that you are providing a conf file. For now the conf file is a
+flat list of groups that'll be added to the default ACLs of newly created user
+files. We use this to give admins access to view user job scripts and
+environment files.
