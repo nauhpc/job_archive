@@ -20,6 +20,7 @@ g++ job_archive.cpp -o job_archive -std=c++0x -lpthread
 #include <algorithm>
 #include <signal.h>
 #include <cctype>
+#include <grp.h>
 using namespace std;
 
 #include "HelperFn.h"
@@ -33,6 +34,7 @@ using namespace std;
 #define BUF_LEN     ( MAX_EVENTS * ( EVENT_SIZE + LEN_NAME )) /*buffer to store the data of events*/
 
 // global flags
+vector<string> groups; // for setfacl
 int maxSaveJobCnt = 0;
 int debug = 0;
 /* debug levels
@@ -345,7 +347,7 @@ void do_processFiles( const int& id, const string& targDestPath1, Queue<SlurmJob
             // after creating new dir then setfacl
             bool setfaclDebug = false;
             if (debug > 1) setfaclDebug = true;
-            if (! setfacl( parse.user, targDestPathUser, setfaclDebug)) {
+            if (! setfacl( parse.user, targDestPathUser, groups, setfaclDebug)) {
                 // todo double check the error handling in setfacl
                 sprintf( prtBuf, "ERROR:%d setfacl user: %s -%s", id, parse.user.c_str(), jobdir->getString().c_str());
                 logger->LOG(prtBuf);
@@ -365,6 +367,17 @@ void do_processFiles( const int& id, const string& targDestPath1, Queue<SlurmJob
                 saveJobFiles( prtBuf, jobdir, logger );
                 delete jobdir;
                 continue;
+            }
+            // after creating new dir then setfacl
+            bool setfaclDebug = false;
+            if (debug > 1) setfaclDebug = true;
+            if (! setfacl( parse.user, targDestPathUser, groups, setfaclDebug)) {
+              // todo double check the error handling in setfacl
+              sprintf( prtBuf, "ERROR:%d setfacl user: %s -%s", id, parse.user.c_str(), jobdir->getString().c_str());
+              logger->LOG(prtBuf);
+              saveJobFiles( prtBuf, jobdir, logger );
+              delete jobdir;
+              continue;
             }
         }
 
@@ -498,17 +511,36 @@ int main( int argc, char **argv ) {
     sprintf(prtBuf, "main begin - for help: sudo kill -1 %ld", getpid());
     logger.LOG(prtBuf);
 
-    if (argc == 2 && (strcmp(argv[1],"-d") == 0 || strcmp(argv[1],"-d1") == 0)) {
-        debug = 1;
-        std::cerr << "**** debug = " << debug << " ****" << std::endl;
-    }
-    if (argc == 2 && strcmp(argv[1],"-d2") == 0) {
-        debug = 2;
-        std::cerr << "**** debug = " << debug << " ****" << std::endl;
-    }
-    if (argc == 2 && strcmp(argv[1],"-d3") == 0) {
-        debug = 3;
-        std::cerr << "**** debug = " << debug << " ****" << std::endl;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i],"-d") == 0 || strcmp(argv[i],"-d1") == 0) {
+            debug = 1;
+            std::cerr << "**** debug = " << debug << " ****" << std::endl;
+        }
+        else if (strcmp(argv[i],"-d2") == 0) {
+            debug = 2;
+            std::cerr << "**** debug = " << debug << " ****" << std::endl;
+        }
+        else if (strcmp(argv[i],"-d3") == 0) {
+            debug = 3;
+            std::cerr << "**** debug = " << debug << " ****" << std::endl;
+        }
+        else if (strcmp(argv[i], "-c") == 0) {
+            if (i+1 < argc) {
+                ifstream infile(argv[i+1], ifstream::in);
+
+                if (infile.is_open()) {
+                    // populate groups vector
+                    for (string line; getline(infile, line); ) {
+                        struct group * db_entry = getgrnam(line.c_str());
+                        if (db_entry != NULL) {
+                            // group exists on system, add to groups vector
+                            groups.push_back(line);
+                        }
+                    }
+                    infile.close();
+                }
+            }
+        }
     }
 
     string srcSpoolHashPath = "/var/spool/slurm/hash.";
@@ -538,7 +570,7 @@ int main( int argc, char **argv ) {
     for (int i = 0; i < QUE_THD_SIZE; i++) {
         th_que_process[i].join();
     }
-    
+
     cerr << "=== main end ===" << endl;
     return 0;
 }
