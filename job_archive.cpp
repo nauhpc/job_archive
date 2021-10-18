@@ -1,4 +1,3 @@
-
 // to build (also see 00build.txt)
 /*
 g++ job_archive.cpp -o job_archive -std=c++0x -lpthread
@@ -125,24 +124,21 @@ struct ParseBuffer {
     string slurm_job_name;
     string slurm_submit_dir;
     // constructor
-    ParseBuffer(char *sentence) {
-      std::stringstream ss(sentence);
-      std::string line;
-      if (sentence != NULL) {
+    ParseBuffer(string sentence) {
+        std::stringstream ss(sentence);
+        std::string line;
         while(std::getline(ss,line,'\n')) {
-          size_t found=line.find('=');
-          if (found!=std::string::npos) {
-              string key = line.substr(0,found);
-              if (key == "USER") user = line.substr(found+1);
-              if (key == "SLURM_JOB_NAME") {
-                  slurm_job_name = line.substr(found+1);
-                  stripUnicode(slurm_job_name);
-              }
-              if (key == "SLURM_SUBMIT_DIR") slurm_submit_dir = line.substr(found+1);
-          }
-          //cout << line << endl;
+            size_t found=line.find('=');
+            if (found!=std::string::npos) {
+                string key = line.substr(0,found);
+                if (key == "USER") user = line.substr(found+1);
+                if (key == "SLURM_JOB_NAME") {
+                    slurm_job_name = line.substr(found+1);
+                    stripUnicode(slurm_job_name);
+                }
+                if (key == "SLURM_SUBMIT_DIR") slurm_submit_dir = line.substr(found+1);
+            }
         }
-      }
     }
     string altUser() {
       if (slurm_submit_dir.size() == 0) 
@@ -289,7 +285,7 @@ void do_processFiles( const int& id, const string& targDestPath1, Queue<SlurmJob
             if (buffer[i] == 0x00) buffer[i] = 0x0a;
         }
         // parse env for USER= SLURM_JOB_NAME= SLURM_SUBMIT_DIR=
-        ParseBuffer parse(&buffer[0]);
+        ParseBuffer parse(string(buffer.begin(), buffer.end()));
 
         if (parse.user.size() == 0) {
             if (debug > 1) {
