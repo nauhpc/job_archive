@@ -160,7 +160,7 @@ bool setfacl(string userid, string directory, vector<string> groups, bool debug)
     pclose(pipe);
 
     if (output.size() > 0) {
-        cout << "setfacl ERROR: " << &output[0] << endl;
+        cout << "setfacl ERROR: " << string(output.begin(), output.end()) << endl;
         return false;
     }
 
@@ -193,7 +193,7 @@ bool setfacl(string userid, string directory, vector<string> groups, bool debug)
       pclose(pipe);
 
       if (output.size() > 0) {
-        cout << "setfacl ERROR: " << &output[0] << endl;
+        cout << "setfacl ERROR: " << string(output.begin(), output.end()) << endl;
         return false;
       }
 
